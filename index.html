@@ -288,7 +288,8 @@
         if (e.target.value !== "") fillDataToUI(e.target.value);
     });
 
-   function fillDataToUI(index) {
+    // --- HÀM SỬA LỖI ---
+    function fillDataToUI(index) {
         const sv = listStudents[index];
         if (!sv) return;
 
@@ -312,7 +313,6 @@
             }
 
             // Gán ảnh và xử lý lỗi nếu ảnh không tồn tại (Fallback)
-            // Kỹ thuật này sẽ thử tải ảnh, nếu lỗi sẽ quay về ảnh mặc định
             let imgTest = new Image();
             imgTest.src = imgSrc;
             imgTest.onload = () => {
@@ -331,32 +331,6 @@
         document.getElementById('studentAddress').innerText = sv.DiaChi || "Chưa cập nhật";
         
         // Link Map
-        const mapBtn = document.getElementById('mapBtn');
-        if (sv.LinkBanDo) {
-            mapBtn.href = sv.LinkBanDo;
-            mapBtn.style.pointerEvents = "auto";
-            mapBtn.style.opacity = "1";
-        } else {
-            mapBtn.href = "#";
-            mapBtn.style.opacity = "0.7";
-        }
-        
-        document.getElementById('fatherName').innerText = sv.TenCha || "---";
-        document.getElementById('fatherJob').innerText = sv.NgheCha || "---";
-        document.getElementById('fatherPhone').innerText = sv.SDTCha || "---";
-        document.getElementById('fatherCall').href = sv.SDTCha ? "tel:" + sv.SDTCha : "#";
-
-        document.getElementById('motherName').innerText = sv.TenMe || "---";
-        document.getElementById('motherJob').innerText = sv.NgheMe || "---";
-        document.getElementById('motherPhone').innerText = sv.SDTMe || "---";
-        document.getElementById('motherCall').href = sv.SDTMe ? "tel:" + sv.SDTMe : "#";
-
-        document.getElementById('oldClass').innerText = sv.LopCu || "---";
-        document.getElementById('academicRank').innerText = sv.HocLuc || "---";
-        document.getElementById('conductRank').innerText = sv.HanhKiem || "---"; 
-    }
-        
-        // Link Map integration
         const mapBtn = document.getElementById('mapBtn');
         if (sv.LinkBanDo) {
             mapBtn.href = sv.LinkBanDo;
@@ -403,4 +377,5 @@
 
 </body>
 </html>
+
 
