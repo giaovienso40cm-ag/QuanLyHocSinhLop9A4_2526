@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <script id="tailwind-config">
         tailwind.config = {
@@ -51,7 +51,7 @@
             
             <div class="flex-1 flex flex-col gap-1">
                 <select id="studentSelector" class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 pl-3 pr-8 text-sm font-bold text-primary outline-none transition-all">
-                    <option value="">Nạp Excel để xem...</option>
+                    <option value="">Đang tải dữ liệu...</option>
                 </select>
             </div>
             
@@ -171,16 +171,57 @@
     const selector = document.getElementById('studentSelector');
     const searchBar = document.getElementById('searchBar');
 
+    // 1. Tự động chạy khi tải trang
     window.onload = () => {
-        const savedData = localStorage.getItem('studentData');
-        if (savedData) {
-            listStudents = JSON.parse(savedData);
-            updateDropdown(listStudents);
-            fillDataToUI(0);
-            unlockUI();
-        }
+        // Ưu tiên tải từ file DULieu.xlsx trên GitHub trước
+        loadDataFromServer();
     };
 
+    // Hàm tải dữ liệu tự động từ server (GitHub)
+    function loadDataFromServer() {
+        const url = "./DULieu.xlsx"; // File phải nằm cùng thư mục
+        
+        console.log("Đang tải dữ liệu từ: " + url);
+        
+        fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error("Không tìm thấy file DULieu.xlsx trên server");
+            return res.arrayBuffer();
+        })
+        .then(data => {
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rawData = XLSX.utils.sheet_to_json(sheet);
+            
+            // Lọc dữ liệu hợp lệ
+            listStudents = rawData.filter(item => item.HoTen);
+
+            if (listStudents.length > 0) {
+                console.log("Tải thành công " + listStudents.length + " học sinh");
+                // Lưu cache để dùng lần sau nếu mất mạng
+                localStorage.setItem('studentData', JSON.stringify(listStudents));
+                updateDropdown(listStudents);
+                fillDataToUI(0);
+                unlockUI();
+            }
+        })
+        .catch(err => {
+            console.warn("Không tải được file online, chuyển sang dùng bộ nhớ tạm...", err);
+            // Nếu lỗi (ví dụ chưa upload file), thử lấy từ localStorage cũ
+            const savedData = localStorage.getItem('studentData');
+            if (savedData) {
+                listStudents = JSON.parse(savedData);
+                updateDropdown(listStudents);
+                fillDataToUI(0);
+                unlockUI();
+            } else {
+                selector.innerHTML = '<option>Không có dữ liệu (Vui lòng upload)</option>';
+                alert("Chưa tìm thấy file DULieu.xlsx. Bạn hãy upload file này lên GitHub hoặc nạp thủ công.");
+            }
+        });
+    }
+
+    // 2. Nạp thủ công (giữ nguyên tính năng cũ)
     document.getElementById('excelInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -206,7 +247,7 @@
     });
 
     document.getElementById('btnClear').addEventListener('click', () => {
-        if(confirm("Bạn có muốn xóa toàn bộ danh sách đã nạp?")) {
+        if(confirm("Bạn có muốn xóa dữ liệu đã lưu?")) {
             localStorage.removeItem('studentData');
             location.reload();
         }
@@ -220,6 +261,7 @@
         }
 
         data.forEach((sv) => {
+            // Tìm index gốc để khi chọn map đúng data
             const originalIndex = listStudents.findIndex(s => s.MaHS === sv.MaHS && s.HoTen === sv.HoTen);
             const option = document.createElement('option');
             option.value = originalIndex;
@@ -231,11 +273,15 @@
     searchBar.addEventListener('input', (e) => {
         const keyword = e.target.value.toLowerCase().trim();
         const filtered = listStudents.filter(s => 
-            s.HoTen.toLowerCase().includes(keyword) || 
+            (s.HoTen && s.HoTen.toLowerCase().includes(keyword)) || 
             (s.MaHS && s.MaHS.toString().includes(keyword))
         );
         updateDropdown(filtered);
-        if (filtered.length > 0) fillDataToUI(listStudents.indexOf(filtered[0]));
+        if (filtered.length > 0) {
+             const firstMatchIndex = listStudents.findIndex(s => s.MaHS === filtered[0].MaHS);
+             fillDataToUI(firstMatchIndex);
+             selector.value = firstMatchIndex; // Update selector visual
+        }
     });
 
     selector.addEventListener('change', (e) => {
@@ -247,8 +293,15 @@
         if (!sv) return;
 
         const avatarEl = document.getElementById('studentAvatar');
-        if (sv.AnhDaiDien && sv.AnhDaiDien.toString().trim() !== "") {
-            avatarEl.style.backgroundImage = `url('${sv.AnhDaiDien}')`;
+        // Kiểm tra đường dẫn ảnh. Nếu là tên file (Hinh1.jpg) thì thêm đường dẫn thư mục 'anh_hs/'
+        let imgSrc = sv.AnhDaiDien;
+        if (imgSrc && !imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
+            // Logic ghép link ảnh GitHub: ./anh_hs/ten_file
+            imgSrc = "./anh_hs/" + imgSrc; 
+        }
+
+        if (imgSrc && imgSrc.trim() !== "") {
+            avatarEl.style.backgroundImage = `url('${imgSrc}')`;
         } else {
             avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=random&size=128')`;
         }
@@ -281,7 +334,7 @@
 
         document.getElementById('oldClass').innerText = sv.LopCu || "---";
         document.getElementById('academicRank').innerText = sv.HocLuc || "---";
-        document.getElementById('conductRank').innerText = sv.HanhKiem || "---"; // Updated field
+        document.getElementById('conductRank').innerText = sv.HanhKiem || "---"; 
     }
 
     function unlockUI() {
