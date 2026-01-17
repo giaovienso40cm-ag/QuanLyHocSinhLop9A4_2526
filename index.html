@@ -261,7 +261,6 @@
         }
 
         data.forEach((sv) => {
-            // Tìm index gốc để khi chọn map đúng data
             const originalIndex = listStudents.findIndex(s => s.MaHS === sv.MaHS && s.HoTen === sv.HoTen);
             const option = document.createElement('option');
             option.value = originalIndex;
@@ -280,7 +279,7 @@
         if (filtered.length > 0) {
              const firstMatchIndex = listStudents.findIndex(s => s.MaHS === filtered[0].MaHS);
              fillDataToUI(firstMatchIndex);
-             selector.value = firstMatchIndex; // Update selector visual
+             selector.value = firstMatchIndex; 
         }
     });
 
@@ -288,7 +287,6 @@
         if (e.target.value !== "") fillDataToUI(e.target.value);
     });
 
-    // --- HÀM SỬA LỖI ---
     function fillDataToUI(index) {
         const sv = listStudents[index];
         if (!sv) return;
@@ -296,34 +294,26 @@
         const avatarEl = document.getElementById('studentAvatar');
         
         // --- XỬ LÝ ẢNH ---
-        let imgSrc = sv.AnhDaiDien; // Lấy tên file từ Excel (ví dụ: "hinh1.jpg")
+        let imgSrc = sv.AnhDaiDien; 
         
-        // Nếu ô Excel trống, dùng ảnh mặc định tạo từ tên
         if (!imgSrc || imgSrc.toString().trim() === "") {
              avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=random&size=128')`;
         } else {
-            // Nếu là link online (http) thì giữ nguyên, nếu là tên file thì thêm thư mục
             if (!imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
-                // Xử lý trường hợp người dùng lỡ nhập "anh_hs/hinh1.jpg" trong Excel
-                // Chúng ta sẽ xóa phần "anh_hs/" đi để code tự thêm vào cho chuẩn
                 imgSrc = imgSrc.replace(/^anh_hs\//, "").replace(/^anh_hs\\/, "");
-                
-                // Ghép đường dẫn chuẩn
                 imgSrc = "./anh_hs/" + imgSrc;
             }
 
-            // Gán ảnh và xử lý lỗi nếu ảnh không tồn tại (Fallback)
             let imgTest = new Image();
             imgTest.src = imgSrc;
             imgTest.onload = () => {
                 avatarEl.style.backgroundImage = `url('${imgSrc}')`;
             };
             imgTest.onerror = () => {
-                console.warn("Không tìm thấy ảnh: " + imgSrc + ". Đang dùng ảnh thay thế.");
+                console.warn("Không tìm thấy ảnh: " + imgSrc);
                 avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=ddd&color=fff&size=128')`;
             };
         }
-        // -----------------
 
         document.getElementById('studentName').innerText = sv.HoTen;
         document.getElementById('studentID').innerText = "HS: " + (sv.MaHS || "---");
@@ -377,5 +367,6 @@
 
 </body>
 </html>
+
 
 
