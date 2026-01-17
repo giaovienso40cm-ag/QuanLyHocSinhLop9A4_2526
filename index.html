@@ -288,28 +288,73 @@
         if (e.target.value !== "") fillDataToUI(e.target.value);
     });
 
-    function fillDataToUI(index) {
+   function fillDataToUI(index) {
         const sv = listStudents[index];
         if (!sv) return;
 
         const avatarEl = document.getElementById('studentAvatar');
-        // Kiểm tra đường dẫn ảnh. Nếu là tên file (Hinh1.jpg) thì thêm đường dẫn thư mục 'anh_hs/'
-        let imgSrc = sv.AnhDaiDien;
-        if (imgSrc && !imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
-            // Logic ghép link ảnh GitHub: ./anh_hs/ten_file
-            imgSrc = "./anh_hs/" + imgSrc; 
-        }
-
-        if (imgSrc && imgSrc.trim() !== "") {
-            avatarEl.style.backgroundImage = `url('${imgSrc}')`;
+        
+        // --- XỬ LÝ ẢNH ---
+        let imgSrc = sv.AnhDaiDien; // Lấy tên file từ Excel (ví dụ: "hinh1.jpg")
+        
+        // Nếu ô Excel trống, dùng ảnh mặc định tạo từ tên
+        if (!imgSrc || imgSrc.toString().trim() === "") {
+             avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=random&size=128')`;
         } else {
-            avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=random&size=128')`;
+            // Nếu là link online (http) thì giữ nguyên, nếu là tên file thì thêm thư mục
+            if (!imgSrc.startsWith('http') && !imgSrc.startsWith('data:')) {
+                // Xử lý trường hợp người dùng lỡ nhập "anh_hs/hinh1.jpg" trong Excel
+                // Chúng ta sẽ xóa phần "anh_hs/" đi để code tự thêm vào cho chuẩn
+                imgSrc = imgSrc.replace(/^anh_hs\//, "").replace(/^anh_hs\\/, "");
+                
+                // Ghép đường dẫn chuẩn
+                imgSrc = "./anh_hs/" + imgSrc;
+            }
+
+            // Gán ảnh và xử lý lỗi nếu ảnh không tồn tại (Fallback)
+            // Kỹ thuật này sẽ thử tải ảnh, nếu lỗi sẽ quay về ảnh mặc định
+            let imgTest = new Image();
+            imgTest.src = imgSrc;
+            imgTest.onload = () => {
+                avatarEl.style.backgroundImage = `url('${imgSrc}')`;
+            };
+            imgTest.onerror = () => {
+                console.warn("Không tìm thấy ảnh: " + imgSrc + ". Đang dùng ảnh thay thế.");
+                avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=ddd&color=fff&size=128')`;
+            };
         }
+        // -----------------
 
         document.getElementById('studentName').innerText = sv.HoTen;
         document.getElementById('studentID').innerText = "HS: " + (sv.MaHS || "---");
         document.getElementById('studentClass').innerText = "Lớp " + (sv.Lop || "--");
         document.getElementById('studentAddress').innerText = sv.DiaChi || "Chưa cập nhật";
+        
+        // Link Map
+        const mapBtn = document.getElementById('mapBtn');
+        if (sv.LinkBanDo) {
+            mapBtn.href = sv.LinkBanDo;
+            mapBtn.style.pointerEvents = "auto";
+            mapBtn.style.opacity = "1";
+        } else {
+            mapBtn.href = "#";
+            mapBtn.style.opacity = "0.7";
+        }
+        
+        document.getElementById('fatherName').innerText = sv.TenCha || "---";
+        document.getElementById('fatherJob').innerText = sv.NgheCha || "---";
+        document.getElementById('fatherPhone').innerText = sv.SDTCha || "---";
+        document.getElementById('fatherCall').href = sv.SDTCha ? "tel:" + sv.SDTCha : "#";
+
+        document.getElementById('motherName').innerText = sv.TenMe || "---";
+        document.getElementById('motherJob').innerText = sv.NgheMe || "---";
+        document.getElementById('motherPhone').innerText = sv.SDTMe || "---";
+        document.getElementById('motherCall').href = sv.SDTMe ? "tel:" + sv.SDTMe : "#";
+
+        document.getElementById('oldClass').innerText = sv.LopCu || "---";
+        document.getElementById('academicRank').innerText = sv.HocLuc || "---";
+        document.getElementById('conductRank').innerText = sv.HanhKiem || "---"; 
+    }
         
         // Link Map integration
         const mapBtn = document.getElementById('mapBtn');
@@ -358,3 +403,4 @@
 
 </body>
 </html>
+
