@@ -194,28 +194,51 @@
         }
     };
 
-    document.getElementById('excelInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+   // --- CẤU HÌNH ĐƯỜNG DẪN GITHUB TẠI ĐÂY ---
+    // Ví dụ: const GITHUB_URL = 'https://raw.githubusercontent.com/ten-ban/repo/main/data.xlsx';
+    const GITHUB_URL = 'DÁN_LINK_RAW_GITHUB_CỦA_BẠN_VÀO_ĐÂY'; 
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawData = XLSX.utils.sheet_to_json(sheet);
+    document.getElementById('btnLoadCloud').addEventListener('click', function() {
+        // Hiệu ứng loading đơn giản
+        const btn = this;
+        const icon = btn.querySelector('span');
+        const originalIcon = icon.innerText;
+        
+        // Đổi icon sang xoay xoay để báo đang tải
+        icon.innerText = 'sync';
+        icon.classList.add('animate-spin');
+        
+        fetch(GITHUB_URL)
+            .then(response => {
+                if (!response.ok) throw new Error("Không thể kết nối tới file dữ liệu!");
+                return response.arrayBuffer();
+            })
+            .then(data => {
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(sheet);
 
-            listStudents = rawData.filter(item => item.HoTen);
+                listStudents = rawData.filter(item => item.HoTen); // Lọc dữ liệu rỗng
 
-            if (listStudents.length > 0) {
-                localStorage.setItem('studentData', JSON.stringify(listStudents));
-                updateDropdown(listStudents);
-                fillDataToUI(0);
-                unlockUI();
-                alert(`Nạp thành công ${listStudents.length} học sinh!`);
-            }
-        };
-        reader.readAsArrayBuffer(file);
+                if (listStudents.length > 0) {
+                    localStorage.setItem('studentData', JSON.stringify(listStudents));
+                    updateDropdown(listStudents);
+                    fillDataToUI(0);
+                    unlockUI();
+                    alert(`Đã cập nhật thành công dữ liệu của ${listStudents.length} học sinh từ hệ thống!`);
+                } else {
+                    alert("File dữ liệu trống hoặc sai định dạng!");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Lỗi: Không tải được dữ liệu. Vui lòng kiểm tra đường mạng hoặc link GitHub.");
+            })
+            .finally(() => {
+                // Trả lại trạng thái nút bấm ban đầu
+                icon.innerText = originalIcon;
+                icon.classList.remove('animate-spin');
+            });
     });
 
     document.getElementById('btnClear').addEventListener('click', () => {
@@ -320,5 +343,4 @@
 </script>
 
 </body>
-
 </html>
