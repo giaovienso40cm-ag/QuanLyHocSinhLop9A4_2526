@@ -184,6 +184,9 @@
     const selector = document.getElementById('studentSelector');
     const searchBar = document.getElementById('searchBar');
 
+    // ĐÂY LÀ LINK DỮ LIỆU CỦA BẠN (Đã được chuyển sang dạng direct link chuẩn)
+    const GITHUB_URL = 'https://raw.githubusercontent.com/giaovienso40cm-ag/QuanLyHocSinhLop9A4_2526/main/DULieu.xlsx';
+
     window.onload = () => {
         const savedData = localStorage.getItem('studentData');
         if (savedData) {
@@ -194,23 +197,19 @@
         }
     };
 
-   // --- CẤU HÌNH ĐƯỜNG DẪN GITHUB TẠI ĐÂY ---
-    // Ví dụ: const GITHUB_URL = 'https://raw.githubusercontent.com/ten-ban/repo/main/data.xlsx';
-    const GITHUB_URL = 'DULieu.xlsx'; 
-
+    // Xử lý nút tải từ GitHub
     document.getElementById('btnLoadCloud').addEventListener('click', function() {
-        // Hiệu ứng loading đơn giản
         const btn = this;
         const icon = btn.querySelector('span');
         const originalIcon = icon.innerText;
         
-        // Đổi icon sang xoay xoay để báo đang tải
+        // Hiệu ứng đang tải (xoay icon)
         icon.innerText = 'sync';
         icon.classList.add('animate-spin');
         
         fetch(GITHUB_URL)
             .then(response => {
-                if (!response.ok) throw new Error("Không thể kết nối tới file dữ liệu!");
+                if (!response.ok) throw new Error("Không thể kết nối tới GitHub!");
                 return response.arrayBuffer();
             })
             .then(data => {
@@ -218,31 +217,31 @@
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const rawData = XLSX.utils.sheet_to_json(sheet);
 
-                listStudents = rawData.filter(item => item.HoTen); // Lọc dữ liệu rỗng
+                // Lọc bỏ các dòng trống
+                listStudents = rawData.filter(item => item.HoTen);
 
                 if (listStudents.length > 0) {
                     localStorage.setItem('studentData', JSON.stringify(listStudents));
                     updateDropdown(listStudents);
                     fillDataToUI(0);
                     unlockUI();
-                    alert(`Đã cập nhật thành công dữ liệu của ${listStudents.length} học sinh từ hệ thống!`);
+                    alert(`Thành công! Đã cập nhật dữ liệu của ${listStudents.length} học sinh.`);
                 } else {
-                    alert("File dữ liệu trống hoặc sai định dạng!");
+                    alert("File dữ liệu trống!");
                 }
             })
             .catch(error => {
                 console.error(error);
-                alert("Lỗi: Không tải được dữ liệu. Vui lòng kiểm tra đường mạng hoặc link GitHub.");
+                alert("Lỗi: Không tải được file. Hãy kiểm tra lại kết nối mạng.");
             })
             .finally(() => {
-                // Trả lại trạng thái nút bấm ban đầu
                 icon.innerText = originalIcon;
                 icon.classList.remove('animate-spin');
             });
     });
 
     document.getElementById('btnClear').addEventListener('click', () => {
-        if(confirm("Bạn có muốn xóa toàn bộ danh sách đã nạp?")) {
+        if(confirm("Bạn có muốn xóa toàn bộ danh sách offline?")) {
             localStorage.removeItem('studentData');
             location.reload();
         }
@@ -294,7 +293,6 @@
         document.getElementById('studentClass').innerText = "Lớp " + (sv.Lop || "--");
         document.getElementById('studentAddress').innerText = sv.DiaChi || "Chưa cập nhật";
         
-        // Link Map integration
         const mapBtn = document.getElementById('mapBtn');
         if (sv.LinkBanDo) {
             mapBtn.href = sv.LinkBanDo;
@@ -317,10 +315,10 @@
 
         document.getElementById('oldClass').innerText = sv.LopCu || "---";
         document.getElementById('academicRank').innerText = sv.HocLuc || "---";
-        document.getElementById('conductRank').innerText = sv.HanhKiem || "---"; // Updated field
-// CODE MỚI: Đổ dữ liệu Ghi chú
-    // Nếu trong Excel không có ghi chú, sẽ hiện thông báo mặc định
-    document.getElementById('studentNote').innerText = sv.GhiChu ? sv.GhiChu : "Không.";
+        document.getElementById('conductRank').innerText = sv.HanhKiem || "---";
+        
+        // Đổ dữ liệu Ghi chú (Nếu file Excel có cột GhiChu)
+        document.getElementById('studentNote').innerText = sv.GhiChu ? sv.GhiChu : "Không có ghi chú.";
     }
 
     function unlockUI() {
@@ -344,4 +342,5 @@
 
 </body>
 </html>
+
 
