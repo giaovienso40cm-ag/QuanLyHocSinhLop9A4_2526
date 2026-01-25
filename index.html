@@ -118,4 +118,242 @@
         <div class="flex flex-col gap-3">
             <h3 class="px-1 text-lg font-bold">Thông tin gia đình</h3>
             <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm border border-slate-100">
-                <div class="flex items-center gap-
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded">CHA</span>
+                    <span id="fatherName" class="font-bold">---</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                    <div><p class="text-slate-500 text-xs italic">Nghề nghiệp</p><p id="fatherJob" class="font-medium">---</p></div>
+                    <div><p class="text-slate-500 text-xs italic">SĐT</p><p id="fatherPhone" class="font-medium">---</p></div>
+                </div>
+                <a id="fatherCall" href="#" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/10 h-10 text-primary font-bold text-sm">
+                    <span class="material-symbols-outlined text-base">call</span> Gọi cho Cha
+                </a>
+            </div>
+            <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm border border-slate-100">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-pink-50 text-pink-600 text-[10px] font-bold px-2 py-0.5 rounded">MẸ</span>
+                    <span id="motherName" class="font-bold">---</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                    <div><p class="text-slate-500 text-xs italic">Nghề nghiệp</p><p id="motherJob" class="font-medium">---</p></div>
+                    <div><p class="text-slate-500 text-xs italic">SĐT</p><p id="motherPhone" class="font-medium">---</p></div>
+                </div>
+                <a id="motherCall" href="#" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/10 h-10 text-primary font-bold text-sm">
+                    <span class="material-symbols-outlined text-base">call</span> Gọi cho Mẹ
+                </a>
+            </div>
+        </div>
+    </div> 
+    <div id="content-academic" class="tab-content flex-1 bg-background-light dark:bg-background-dark p-4 flex-col gap-4">
+        <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm">
+            <h3 class="text-lg font-bold mb-4 italic text-primary">Hồ sơ học tập</h3>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-1">Lớp cũ</p>
+                    <p id="oldClass" class="font-bold text-sm sm:text-base">---</p>
+                </div>
+                <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-1">Học lực</p>
+                    <p id="academicRank" class="font-bold text-sm sm:text-base text-primary">---</p>
+                </div>
+                <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-1">Hạnh kiểm</p>
+                    <p id="conductRank" class="font-bold text-sm sm:text-base text-green-600">---</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm border-l-4 border-yellow-400">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-yellow-500">sticky_note_2</span>
+                <h3 class="text-lg font-bold italic text-slate-800 dark:text-slate-200">Ghi chú lưu ý</h3>
+            </div>
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-100 dark:border-yellow-800/30">
+                <p id="studentNote" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                    ---
+                </p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<script>
+    let listStudents = [];
+    const selector = document.getElementById('studentSelector');
+    const searchBar = document.getElementById('searchBar');
+
+    // === CẤU HÌNH LINK GITHUB CỦA BẠN TẠI ĐÂY ===
+    const GITHUB_URL = 'https://raw.githubusercontent.com/giaovienso40cm-ag/QuanLyHocSinhLop9A4_2526/main/DULieu.xlsx';
+
+    window.onload = () => {
+        const savedData = localStorage.getItem('studentData');
+        if (savedData) {
+            listStudents = JSON.parse(savedData);
+            updateDropdown(listStudents);
+            fillDataToUI(0);
+            unlockUI();
+        }
+    };
+
+    // --- LOGIC TẢI DỮ LIỆU TỪ GITHUB ---
+    document.getElementById('btnLoadCloud').addEventListener('click', function() {
+        const btn = this;
+        const icon = btn.querySelector('span');
+        const originalIcon = icon.innerText;
+        
+        // Hiệu ứng loading
+        icon.innerText = 'sync';
+        icon.classList.add('animate-spin');
+        
+        fetch(GITHUB_URL)
+            .then(response => {
+                if (!response.ok) throw new Error("Không kết nối được với GitHub (Lỗi mạng hoặc sai link)");
+                return response.arrayBuffer();
+            })
+            .then(data => {
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(sheet);
+
+                // Lọc bỏ dòng trống
+                listStudents = rawData.filter(item => item.HoTen);
+
+                if (listStudents.length > 0) {
+                    localStorage.setItem('studentData', JSON.stringify(listStudents));
+                    updateDropdown(listStudents);
+                    fillDataToUI(0);
+                    unlockUI();
+                    alert(`✅ Thành công! Đã cập nhật hồ sơ của ${listStudents.length} học sinh.`);
+                } else {
+                    alert("⚠️ File dữ liệu trên GitHub bị trống!");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert("❌ Lỗi: Không thể tải dữ liệu. Vui lòng kiểm tra lại đường truyền internet.");
+            })
+            .finally(() => {
+                // Trả lại nút bấm như cũ
+                icon.innerText = originalIcon;
+                icon.classList.remove('animate-spin');
+            });
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+        if(confirm("Bạn có chắc muốn xóa dữ liệu đã lưu trên máy?")) {
+            localStorage.removeItem('studentData');
+            location.reload();
+        }
+    });
+
+    function updateDropdown(data) {
+        selector.innerHTML = '';
+        if (data.length === 0) {
+            selector.innerHTML = '<option>Không tìm thấy...</option>';
+            return;
+        }
+
+        data.forEach((sv) => {
+            const originalIndex = listStudents.findIndex(s => s.MaHS === sv.MaHS && s.HoTen === sv.HoTen);
+            const option = document.createElement('option');
+            option.value = originalIndex;
+            option.textContent = `${sv.HoTen} (${sv.Lop || '?'})`;
+            selector.appendChild(option);
+        });
+    }
+
+    searchBar.addEventListener('input', (e) => {
+        const keyword = e.target.value.toLowerCase().trim();
+        const filtered = listStudents.filter(s => 
+            s.HoTen.toLowerCase().includes(keyword) || 
+            (s.MaHS && s.MaHS.toString().includes(keyword))
+        );
+        updateDropdown(filtered);
+        if (filtered.length > 0) fillDataToUI(listStudents.indexOf(filtered[0]));
+    });
+
+    selector.addEventListener('change', (e) => {
+        if (e.target.value !== "") fillDataToUI(e.target.value);
+    });
+
+    function fillDataToUI(index) {
+        const sv = listStudents[index];
+        if (!sv) return;
+
+        const avatarEl = document.getElementById('studentAvatar');
+        if (sv.AnhDaiDien && sv.AnhDaiDien.toString().trim() !== "") {
+            avatarEl.style.backgroundImage = `url('${sv.AnhDaiDien}')`;
+        } else {
+            avatarEl.style.backgroundImage = `url('https://ui-avatars.com/api/?name=${encodeURIComponent(sv.HoTen)}&background=random&size=128')`;
+        }
+
+        document.getElementById('studentName').innerText = sv.HoTen;
+        document.getElementById('studentID').innerText = "HS: " + (sv.MaHS || "---");
+        document.getElementById('studentClass').innerText = "Lớp " + (sv.Lop || "--");
+        document.getElementById('studentAddress').innerText = sv.DiaChi || "Chưa cập nhật";
+        
+        // Map Logic
+        const mapBtn = document.getElementById('mapBtn');
+        if (sv.LinkBanDo) {
+            mapBtn.href = sv.LinkBanDo;
+            mapBtn.style.pointerEvents = "auto";
+            mapBtn.style.opacity = "1";
+        } else {
+            mapBtn.href = "#";
+            mapBtn.style.opacity = "0.7";
+        }
+        
+        document.getElementById('fatherName').innerText = sv.TenCha || "---";
+        document.getElementById('fatherJob').innerText = sv.NgheCha || "---";
+        document.getElementById('fatherPhone').innerText = sv.SDTCha || "---";
+        document.getElementById('fatherCall').href = sv.SDTCha ? "tel:" + sv.SDTCha : "#";
+
+        document.getElementById('motherName').innerText = sv.TenMe || "---";
+        document.getElementById('motherJob').innerText = sv.NgheMe || "---";
+        document.getElementById('motherPhone').innerText = sv.SDTMe || "---";
+        document.getElementById('motherCall').href = sv.SDTMe ? "tel:" + sv.SDTMe : "#";
+
+        document.getElementById('oldClass').innerText = sv.LopCu || "---";
+        document.getElementById('academicRank').innerText = sv.HocLuc || "---";
+        document.getElementById('conductRank').innerText = sv.HanhKiem || "---";
+        
+        // --- HIỂN THỊ GHI CHÚ ---
+        document.getElementById('studentNote').innerText = sv.GhiChu ? sv.GhiChu : "Không có ghi chú đặc biệt nào.";
+    }
+
+    function unlockUI() {
+        document.getElementById('mainProfile').classList.remove('opacity-50', 'grayscale');
+        document.getElementById('statusDot').classList.replace('bg-gray-400', 'bg-green-500');
+    }
+
+    // --- LOGIC CHUYỂN TAB MỚI (Đã tối ưu) ---
+    const tabInputs = document.querySelectorAll('input[name="tab-view"]');
+    function updateTabs() {
+        const activeInput = document.querySelector('input[name="tab-view"]:checked');
+        const activeTabValue = activeInput.value;
+
+        // 1. Ẩn hết, chỉ hiện tab đang chọn
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`content-${activeTabValue}`).classList.add('active');
+
+        // 2. Đổi màu nút bấm
+        ['label-general', 'label-academic'].forEach(labelId => {
+            const el = document.getElementById(labelId);
+            // Reset về trạng thái xám
+            el.className = "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-slate-500 text-sm font-medium transition-all";
+        });
+
+        // Set trạng thái trắng (Active) cho nút đang chọn
+        const activeLabel = document.getElementById(`label-${activeTabValue}`);
+        activeLabel.className = "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-sm font-semibold bg-white shadow-sm text-slate-900 transition-all";
+    }
+
+    tabInputs.forEach(i => i.addEventListener('change', updateTabs));
+    updateTabs(); // Khởi chạy lần đầu
+</script>
+
+</body>
+</html>
