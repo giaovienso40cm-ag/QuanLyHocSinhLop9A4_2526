@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Quản lý Hồ sơ Học sinh Pro</title>
+    <title>Quản lý Hồ sơ Học sinh Pro - Online Version</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -28,8 +28,10 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
         body { min-height: 100dvh; }
+        /* CSS cho Tab: Mặc định ẩn, active mới hiện */
         .tab-content { display: none; }
         .tab-content.active { display: flex; }
+        
         #studentSelector {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23135bec'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
@@ -51,18 +53,17 @@
             
             <div class="flex-1 flex flex-col gap-1">
                 <select id="studentSelector" class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 pl-3 pr-8 text-sm font-bold text-primary outline-none transition-all">
-                    <option value="">Nạp Excel để xem...</option>
+                    <option value="">Chưa có dữ liệu...</option>
                 </select>
             </div>
             
             <div class="flex items-center gap-1">
-                <button id="btnClear" title="Xóa danh sách" class="flex size-10 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50 transition-colors">
+                <button id="btnClear" title="Xóa dữ liệu cũ" class="flex size-10 shrink-0 items-center justify-center rounded-full text-red-400 hover:bg-red-50 transition-colors">
                     <span class="material-symbols-outlined">delete_sweep</span>
                 </button>
-                <label for="excelInput" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 cursor-pointer transition-all active:scale-95">
-                    <span class="material-symbols-outlined">file_upload</span>
-                    <input type="file" id="excelInput" class="hidden" accept=".xlsx, .xls">
-                </label>
+                <button id="btnLoadCloud" title="Tải dữ liệu từ GitHub" class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 cursor-pointer transition-all active:scale-95 border border-blue-100">
+                    <span class="material-symbols-outlined">cloud_download</span>
+                </button>
             </div>
         </div>
         
@@ -80,7 +81,7 @@
             <div id="statusDot" class="absolute bottom-0 right-0 bg-gray-400 h-5 w-5 rounded-full border-4 border-white"></div>
         </div>
         <div class="flex flex-col items-center mt-4 gap-1">
-            <h1 id="studentName" class="text-2xl font-bold text-center text-slate-900 dark:text-white">Chưa có dữ liệu</h1>
+            <h1 id="studentName" class="text-2xl font-bold text-center text-slate-900 dark:text-white">Chưa chọn HS</h1>
             <div class="flex items-center gap-2">
                 <span id="studentID" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">HS: ---</span>
                 <span id="studentClass" class="text-slate-400 text-sm font-medium">Lớp --</span>
@@ -143,46 +144,47 @@
                 </a>
             </div>
         </div>
-    </div>
+    </div> 
+    <div id="content-academic" class="tab-content flex-1 bg-background-light dark:bg-background-dark p-4 flex-col gap-4">
+        <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm">
+            <h3 class="text-lg font-bold mb-4 italic text-primary">Hồ sơ học tập</h3>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-1">Lớp cũ</p>
+                    <p id="oldClass" class="font-bold text-sm sm:text-base">---</p>
+                </div>
+                <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-1">Học lực</p>
+                    <p id="academicRank" class="font-bold text-sm sm:text-base text-primary">---</p>
+                </div>
+                <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-1">Hạnh kiểm</p>
+                    <p id="conductRank" class="font-bold text-sm sm:text-base text-green-600">---</p>
+                </div>
+            </div>
+        </div>
 
-  <div id="content-academic" class="tab-content flex-1 bg-background-light dark:bg-background-dark p-4 flex-col gap-4">
-    <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm">
-        <h3 class="text-lg font-bold mb-4 italic text-primary">Hồ sơ học tập</h3>
-        <div class="grid grid-cols-3 gap-2">
-            <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
-                <p class="text-[10px] text-slate-500 uppercase mb-1">Lớp cũ</p>
-                <p id="oldClass" class="font-bold text-sm sm:text-base">---</p>
+        <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm border-l-4 border-yellow-400">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-yellow-500">sticky_note_2</span>
+                <h3 class="text-lg font-bold italic text-slate-800 dark:text-slate-200">Ghi chú lưu ý</h3>
             </div>
-            <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
-                <p class="text-[10px] text-slate-500 uppercase mb-1">Học lực</p>
-                <p id="academicRank" class="font-bold text-sm sm:text-base text-primary">---</p>
-            </div>
-            <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 text-center">
-                <p class="text-[10px] text-slate-500 uppercase mb-1">Hạnh kiểm</p>
-                <p id="conductRank" class="font-bold text-sm sm:text-base text-green-600">---</p>
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-100 dark:border-yellow-800/30">
+                <p id="studentNote" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                    ---
+                </p>
             </div>
         </div>
     </div>
-
-    <div class="bg-white dark:bg-[#1e293b] rounded-xl p-4 shadow-sm border-l-4 border-yellow-400">
-        <div class="flex items-center gap-2 mb-2">
-            <span class="material-symbols-outlined text-yellow-500">sticky_note_2</span>
-            <h3 class="text-lg font-italic text-slate-800 dark:text-slate-200">Ghi chú </h3>
-        </div>
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-100 dark:border-yellow-800/30">
-            <p id="studentNote" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-                ---
-            </p>
-        </div>
     </div>
-    </div>
-</div>
-</div>
 
 <script>
     let listStudents = [];
     const selector = document.getElementById('studentSelector');
     const searchBar = document.getElementById('searchBar');
+
+    // === CẤU HÌNH LINK GITHUB CỦA BẠN TẠI ĐÂY ===
+    const GITHUB_URL = 'https://raw.githubusercontent.com/giaovienso40cm-ag/QuanLyHocSinhLop9A4_2526/main/DULieu.xlsx';
 
     window.onload = () => {
         const savedData = localStorage.getItem('studentData');
@@ -194,32 +196,52 @@
         }
     };
 
-    document.getElementById('excelInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    // --- LOGIC TẢI DỮ LIỆU TỪ GITHUB ---
+    document.getElementById('btnLoadCloud').addEventListener('click', function() {
+        const btn = this;
+        const icon = btn.querySelector('span');
+        const originalIcon = icon.innerText;
+        
+        // Hiệu ứng loading
+        icon.innerText = 'sync';
+        icon.classList.add('animate-spin');
+        
+        fetch(GITHUB_URL)
+            .then(response => {
+                if (!response.ok) throw new Error("Không kết nối được với GitHub (Lỗi mạng hoặc sai link)");
+                return response.arrayBuffer();
+            })
+            .then(data => {
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rawData = XLSX.utils.sheet_to_json(sheet);
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawData = XLSX.utils.sheet_to_json(sheet);
+                // Lọc bỏ dòng trống
+                listStudents = rawData.filter(item => item.HoTen);
 
-            listStudents = rawData.filter(item => item.HoTen);
-
-            if (listStudents.length > 0) {
-                localStorage.setItem('studentData', JSON.stringify(listStudents));
-                updateDropdown(listStudents);
-                fillDataToUI(0);
-                unlockUI();
-                alert(`Nạp thành công ${listStudents.length} học sinh!`);
-            }
-        };
-        reader.readAsArrayBuffer(file);
+                if (listStudents.length > 0) {
+                    localStorage.setItem('studentData', JSON.stringify(listStudents));
+                    updateDropdown(listStudents);
+                    fillDataToUI(0);
+                    unlockUI();
+                    alert(`✅ Thành công! Đã cập nhật hồ sơ của ${listStudents.length} học sinh.`);
+                } else {
+                    alert("⚠️ File dữ liệu trên GitHub bị trống!");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert("❌ Lỗi: Không thể tải dữ liệu. Vui lòng kiểm tra lại đường truyền internet.");
+            })
+            .finally(() => {
+                // Trả lại nút bấm như cũ
+                icon.innerText = originalIcon;
+                icon.classList.remove('animate-spin');
+            });
     });
 
     document.getElementById('btnClear').addEventListener('click', () => {
-        if(confirm("Bạn có muốn xóa toàn bộ danh sách đã nạp?")) {
+        if(confirm("Bạn có chắc muốn xóa dữ liệu đã lưu trên máy?")) {
             localStorage.removeItem('studentData');
             location.reload();
         }
@@ -271,7 +293,7 @@
         document.getElementById('studentClass').innerText = "Lớp " + (sv.Lop || "--");
         document.getElementById('studentAddress').innerText = sv.DiaChi || "Chưa cập nhật";
         
-        // Link Map integration
+        // Map Logic
         const mapBtn = document.getElementById('mapBtn');
         if (sv.LinkBanDo) {
             mapBtn.href = sv.LinkBanDo;
@@ -294,10 +316,10 @@
 
         document.getElementById('oldClass').innerText = sv.LopCu || "---";
         document.getElementById('academicRank').innerText = sv.HocLuc || "---";
-        document.getElementById('conductRank').innerText = sv.HanhKiem || "---"; // Updated field
-// CODE MỚI: Đổ dữ liệu Ghi chú
-    // Nếu trong Excel không có ghi chú, sẽ hiện thông báo mặc định
-    document.getElementById('studentNote').innerText = sv.GhiChu ? sv.GhiChu : "Không.";
+        document.getElementById('conductRank').innerText = sv.HanhKiem || "---";
+        
+        // --- HIỂN THỊ GHI CHÚ ---
+        document.getElementById('studentNote').innerText = sv.GhiChu ? sv.GhiChu : "Không có ghi chú đặc biệt nào.";
     }
 
     function unlockUI() {
@@ -305,18 +327,32 @@
         document.getElementById('statusDot').classList.replace('bg-gray-400', 'bg-green-500');
     }
 
+    // --- LOGIC CHUYỂN TAB MỚI (Đã tối ưu) ---
     const tabInputs = document.querySelectorAll('input[name="tab-view"]');
     function updateTabs() {
-        const activeTab = document.querySelector('input[name="tab-view"]:checked').value;
-        const isGeneral = activeTab === 'general';
-        document.getElementById('content-general').classList.toggle('active', isGeneral);
-        document.getElementById('content-academic').classList.toggle('active', !isGeneral);
-        
-        document.getElementById('label-general').className = isGeneral ? "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-sm font-semibold bg-white shadow-sm text-slate-900" : "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-slate-500 text-sm font-medium";
-        document.getElementById('label-academic').className = !isGeneral ? "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-sm font-semibold bg-white shadow-sm text-slate-900" : "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-slate-500 text-sm font-medium";
+        const activeInput = document.querySelector('input[name="tab-view"]:checked');
+        const activeTabValue = activeInput.value;
+
+        // 1. Ẩn hết, chỉ hiện tab đang chọn
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`content-${activeTabValue}`).classList.add('active');
+
+        // 2. Đổi màu nút bấm
+        ['label-general', 'label-academic'].forEach(labelId => {
+            const el = document.getElementById(labelId);
+            // Reset về trạng thái xám
+            el.className = "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-slate-500 text-sm font-medium transition-all";
+        });
+
+        // Set trạng thái trắng (Active) cho nút đang chọn
+        const activeLabel = document.getElementById(`label-${activeTabValue}`);
+        activeLabel.className = "flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 text-sm font-semibold bg-white shadow-sm text-slate-900 transition-all";
     }
+
     tabInputs.forEach(i => i.addEventListener('change', updateTabs));
-    updateTabs();
+    updateTabs(); // Khởi chạy lần đầu
 </script>
 
 </body>
